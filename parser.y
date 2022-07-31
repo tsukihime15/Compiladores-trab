@@ -1,6 +1,11 @@
 %{
-int yylex(void);
-void yyerror (char const *s);
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include "lex.yy.h"
+    int yylex();
+    int yyerror ();
+    //int getLineNumber();
+    char *yytext;
 %}
 
 %token TK_PR_INT
@@ -71,15 +76,10 @@ variaveis_globais:
 nome_var:
     identificador
     | nome_var
-    | ',' nome_var
+    | nome_var ','
     ;
 tam_vetor:
     '[' inteiro ']'
-    |
-    ;
-inicia_var:
-    menor_igual identificador
-    | menor_igual literal
     |
     ;
 
@@ -88,7 +88,7 @@ funcoes:
     ;
 
 cabecalho:
-    static tipo nome_func '(' lista_param ')'
+    static tipo identificador '(' lista_param ')'
     ;
 corpo_bloco:
     '{' comando_simples ';' '}'
@@ -110,11 +110,17 @@ comando_simples:
     ;
 
 var_local:
-    tipo static const nome_var inicia_var
+    tipo static const nome_var
+    | tipo static const nome_var inicia_var
+    ;
+inicia_var:
+    menor_igual identificador
+    | menor_igual literal
+    |
     ;
 atribuicao:
     identificador '=' expressao
-    | identificador '=' expressao
+    | identificador '[' expressao ']' '=' expressao
     ;
 entrada:
     input identificador
@@ -130,6 +136,10 @@ shift:
     identificador lit_shift inteiro
     | identificador '[' expressao ']' lit_shift inteiro
     ;
+lit_shift:
+    shf_r
+    | shf_l
+    ;
 controle_fluxo:
     if '(' expressao ')' corpo_bloco else_opc
     | for '(' atribuicao ':' expressao ':' atribuicao ')' corpo_bloco
@@ -140,7 +150,7 @@ else_opc:
     |
     ;
 cham_funcao:
-    nome_func '(' lista_arg ')'
+    identificador '(' lista_arg ')'
     ;
 
 expressao:
@@ -178,19 +188,35 @@ operando:
     | booleano
     ;
 
-\* LISTAS *\
+// LISTAS
 
 lista_arg:
+    argumento
+    | argumento outro_arg
+    |
+    ;
+outro_arg:
+    ',' argumento outro_arg
+    |
+    ;
+argumento:
     expressao
-    | lista_arg
-    | ',' lista_arg
     ;
 lista_param:
+    parametro
+    | parametro outro_param
+    |
+    ;
+outro_param:
+    ',' parametro outro_param
+    |
+    ;
+parametro:
     const tipo identificador
-    | ',' lista_param
     ;
 
-\* FOLHAS *\
+// FOLHAS
+
 for:
     TK_PR_FOR
     ;
@@ -224,9 +250,26 @@ break:
 menor_igual:
     TK_OC_LE
     ;
-lit_shift:
+maior_igual:
+    TK_OC_GE
+    ;
+diferente:
+    TK_OC_NE
+    ;
+igual:
+    TK_OC_EQ
+    ;
+e_logico:
+    TK_OC_AND
+    ;
+ou_logico:
+    TK_OC_OR
+    ;
+shf_r:
     TK_OC_SR
-    | TK_OC_SL
+    ;
+shf_l:
+    TK_OC_SL
     ;
 literal:
     TK_LIT_INT
@@ -263,3 +306,10 @@ tipo:
     | TK_PR_STRING
     ;
 %%
+
+int yyerror ()
+{
+fprintf(stderr,"Syntax error at line %d.",getLineNumber());
+fprintf(stderr,"Token %s\n",yytext);
+exit (1);
+}

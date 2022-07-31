@@ -1,14 +1,11 @@
-etapa2: y.tab.c lex.yy.c
+etapa2: parser.tab.c lex.yy.c
 	gcc lex.yy.c -o etapa2
 
-y.tab.c: parser.y
-	yacc parser.y -d
-
-parser.tab.h: parser.y
-	bison -d parser.y
+parser.tab.c: parser.y
+	bison -d --report=all --report-file=debug.txt parser.y
 
 lex.yy.c: scanner.l
-	lex scanner.l
+	flex --header-file=lex.yy.h scanner.l
 
 clean:
-	rm etapa2 y.tab.c y.tab.h lex.yy.c
+	rm etapa2 parser.tab.c parser.tab.h debug.txt lex.yy.c

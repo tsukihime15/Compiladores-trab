@@ -2,7 +2,7 @@
     // Jessica Maria Lorencetti     - 228342
     // Guilherme Ribeiro Rodrigues  - 242299
 
-#include "y.tab.h"
+#include "parser.tab.h"
 
 int lineNumber = 1;
 %}
@@ -79,7 +79,7 @@ true                    {return TK_LIT_TRUE;}
 %%
 
 //#include "main.c"
-#include "y.tab.c"
+//#include "parser.tab.c"
 
 int yywrap()
 {
